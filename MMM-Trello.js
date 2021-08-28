@@ -24,7 +24,10 @@ Module.register("MMM-Trello", {
         showChecklists: true,
         showChecklistTitle: false,
         wholeList: false,
-        isCompleted: false
+        isCompleted: false,
+	numCards: undefined, //number of cards to show from a list
+	startCard: undefined, //show cards from a list starting with card with this ID
+	endCard: undefined, //stop showing cards in the list when you reach this ID
     },
 
     // Define start sequence.
@@ -34,6 +37,7 @@ Module.register("MMM-Trello", {
         moment.locale(this.config.language);
 
         this.listContent = [];
+        this.listInfo = "";
         this.checklistData = {};
 
         this.activeItem = 0;
@@ -122,11 +126,30 @@ Module.register("MMM-Trello", {
                 wrapper.innerHTML = this.translate("NO_CARDS");
                 wrapper.className = "small dimmed";
             } else {
-                var content, card, startat = 0, endat = this.listContent.length - 1;
+                var listName = document.createElement("div");
+                listName.className = "medium";
+                listName.innerHTML = listInfo;
+
+                var content, card, startat = 0, endat = this.listContent.length - 1, moreText = "";;
                 if (!this.config.wholeList) {
                     startat = this.activeItem;
                     endat = this.activeItem;
-                }
+		//    if (this.config.numCards != undefined) {
+		//	    var showNumberCards = this.config.numCards - 1;
+		//	    if (showNumberCards < endat) {
+		  //  		endat = showNumberCards;
+		  //  	    }
+                  //  }
+		} else {
+			if (this.config.numCards != undefined) {
+				var showNumberCards = this.config.numCards - 1;
+			    	if (showNumberCards < endat) {
+					moreText = "and more";
+					endat = showNumberCards;
+			    	}	
+		    	}
+		}
+
                 for (card = startat; card <= endat; card++) {
                     if (this.config.showTitle || this.config.showDueDate) {
                         var name = document.createElement("div");
@@ -175,7 +198,8 @@ Module.register("MMM-Trello", {
                         this.getChecklistDom(checklistWrapper, card);
                         wrapper.appendChild(checklistWrapper);
                     }
-                }
+                //ADD display one more line: moreText
+		}
             }
         } else {
             if (this.error) {
@@ -247,6 +271,7 @@ Module.register("MMM-Trello", {
      */
     requestUpdate: function () {
         this.sendSocketNotification("REQUEST_LIST_CONTENT", {list: this.config.list, id: this.identifier});
+        this.sendSocketNotification("REQUEST_LIST_INFO", {list: this.config.list, id: this.identifier});
     },
 
     notificationReceived: function (notification, payload, sender) {
@@ -288,6 +313,10 @@ Module.register("MMM-Trello", {
         }
         if (notification === "CHECK_LIST_CONTENT") {
             this.checklistData[payload.data.id] = payload.data;
+        }
+        if (notification === "LIST_INFO") {
+            console.log("GOT LIST_INFO");
+            this.listInfo = payload.data;
         }
     }
 });

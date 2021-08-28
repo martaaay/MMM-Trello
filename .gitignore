@@ -3,6 +3,8 @@ logs
 *.log
 npm-debug.log*
 
+*.sw[onp]
+
 # Runtime data
 pids
 *.pid

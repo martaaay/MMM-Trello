@@ -35,6 +35,13 @@ module.exports = NodeHelper.create({
 
             self.retrieveListContent(list, id);
         }
+
+        if (notification === "REQUEST_LIST_INFO") {
+            const list = payload.list;
+            const id = payload.id;
+
+            self.retrieveListContent(list, id);
+        }
     },
 
     // create trello connection
@@ -85,6 +92,27 @@ module.exports = NodeHelper.create({
                 }
             }
             self.sendSocketNotification("LIST_CONTENT", {id: id, data: data});
+        });
+    },
+
+    // retrieve list info
+    retrieveListInfo: function(list, id) {
+        var self = this;
+
+        if (!self.trelloConnections[id]) {
+            return;
+        }
+
+        const path = "/1/lists/" + list + "/";
+
+        self.trelloConnections[id].get(path, {}, function(error, data) {
+            if (error)
+            {
+                console.log(error);
+                self.sendSocketNotification("TRELLO_ERROR", {id: id, error: error});
+                return;
+            }
+            self.sendSocketNotification("LIST_INFO", {id: id, data: data});
         });
     },
 });
