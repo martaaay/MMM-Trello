@@ -127,14 +127,14 @@ Module.register("MMM-Trello", {
                 wrapper.className = "small dimmed";
             } else {
                 var listName = document.createElement("div");
-                listName.className = "medium";
+                listName.className = "medium title";
                 listName.innerHTML = "Loading..."; //this.listInfo.name;
 		if (this.listInfo !== undefined) {
                   listName.innerHTML = this.listInfo.name;
 	 	}
                 wrapper.appendChild(listName);
 
-                var content, card, startat = 0, endat = this.listContent.length - 1, moreText = "";;
+                var content, card, startat = 0, endat = this.listContent.length - 1, moreText = "";
                 if (!this.config.wholeList) {
                     startat = this.activeItem;
                     endat = this.activeItem;
@@ -145,16 +145,28 @@ Module.register("MMM-Trello", {
 		  //  	    }
                   //  }
 		} else {
-			if (this.config.numCards != undefined) {
-				var showNumberCards = this.config.numCards - 1;
-			    	if (showNumberCards < endat) {
-					moreText = "and more";
-					endat = showNumberCards;
-			    	}	
-		    	}
+//			if (this.config.numCards != undefined) {
+//				var showNumberCards = this.config.numCards - 1;
+//			    	if (showNumberCards < endat) {
+//					moreText = "and more";
+//					endat = showNumberCards;
+//			    	}	
+//		    	}
 		}
 
-                for (card = startat; card <= endat; card++) {
+		var count=0;
+		var startCardFound = false;
+                for (card = startat; card <= endat && (this.config.numCards === undefined || count < this.config.numCards); card++, count++) {
+		    if (this.config.startCard !== undefined) {
+    	 	        if (this.listContent[card].id == this.config.startCard) {
+			  startCardFound = true;
+    		        }
+
+		        if (!startCardFound) {
+			  continue;
+			}
+	   	    }
+
                     if (this.config.showTitle || this.config.showDueDate) {
                         var name = document.createElement("div");
                         name.className = "medium light " + (this.config.isCompleted ? "is-completed" : "bright");
@@ -202,6 +214,13 @@ Module.register("MMM-Trello", {
                         this.getChecklistDom(checklistWrapper, card);
                         wrapper.appendChild(checklistWrapper);
                     }
+
+		    if (this.config.endCard !== undefined) {
+    	 	        if (this.listContent[card].id == this.config.endCard) {
+			  break;
+			}
+		    }
+
                 //ADD display one more line: moreText
 		}
             }
