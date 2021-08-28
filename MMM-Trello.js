@@ -37,7 +37,7 @@ Module.register("MMM-Trello", {
         moment.locale(this.config.language);
 
         this.listContent = [];
-        this.listInfo = "";
+        this.listInfo = undefined;
         this.checklistData = {};
 
         this.activeItem = 0;
@@ -128,7 +128,11 @@ Module.register("MMM-Trello", {
             } else {
                 var listName = document.createElement("div");
                 listName.className = "medium";
-                listName.innerHTML = listInfo;
+                listName.innerHTML = "Loading..."; //this.listInfo.name;
+		if (this.listInfo !== undefined) {
+                  listName.innerHTML = this.listInfo.name;
+	 	}
+                wrapper.appendChild(listName);
 
                 var content, card, startat = 0, endat = this.listContent.length - 1, moreText = "";;
                 if (!this.config.wholeList) {
@@ -270,8 +274,8 @@ Module.register("MMM-Trello", {
      * request a list content update
      */
     requestUpdate: function () {
-        this.sendSocketNotification("REQUEST_LIST_CONTENT", {list: this.config.list, id: this.identifier});
         this.sendSocketNotification("REQUEST_LIST_INFO", {list: this.config.list, id: this.identifier});
+        this.sendSocketNotification("REQUEST_LIST_CONTENT", {list: this.config.list, id: this.identifier});
     },
 
     notificationReceived: function (notification, payload, sender) {
@@ -285,8 +289,6 @@ Module.register("MMM-Trello", {
 
     // Override socket notification handler.
     socketNotificationReceived: function (notification, payload) {
-        console.log(payload);
-
         if (payload.id !== this.identifier) {
             // not for this module
             return;
@@ -315,8 +317,9 @@ Module.register("MMM-Trello", {
             this.checklistData[payload.data.id] = payload.data;
         }
         if (notification === "LIST_INFO") {
-            console.log("GOT LIST_INFO");
+            console.log("GOT LIST_INFO " + payload.data.name);
             this.listInfo = payload.data;
+   	    this.updateDom();
         }
     }
 });

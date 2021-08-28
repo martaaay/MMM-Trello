@@ -40,7 +40,7 @@ module.exports = NodeHelper.create({
             const list = payload.list;
             const id = payload.id;
 
-            self.retrieveListContent(list, id);
+            self.retrieveListInfo(list, id);
         }
     },
 
