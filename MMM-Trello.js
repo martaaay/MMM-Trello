@@ -23,6 +23,7 @@ Module.register("MMM-Trello", {
         showDescription: true,
         showChecklists: true,
         showChecklistTitle: false,
+	showChecked: false,
         wholeList: false,
         isCompleted: false,
 	numCards: undefined, //number of cards to show from a list
@@ -154,9 +155,10 @@ Module.register("MMM-Trello", {
 //		    	}
 		}
 
-		var count=0;
 		var startCardFound = false;
-                for (card = startat; card <= endat && (this.config.numCards === undefined || count < this.config.numCards); card++, count++) {
+		var endCardFound = false;
+		var cardsDisplayed = 0;
+                for (card = startat; card <= endat && (this.config.numCards === undefined || cardsDisplayed < this.config.numCards); card++) {
 		    if (this.config.startCard !== undefined) {
     	 	        if (this.listContent[card].id == this.config.startCard) {
 			  startCardFound = true;
@@ -215,13 +217,22 @@ Module.register("MMM-Trello", {
                         wrapper.appendChild(checklistWrapper);
                     }
 
+                //ADD display one more line: moreText
+		    cardsDisplayed++;
+
 		    if (this.config.endCard !== undefined) {
     	 	        if (this.listContent[card].id == this.config.endCard) {
+			  endCardFound = true;
 			  break;
 			}
 		    }
+		}
 
-                //ADD display one more line: moreText
+		if (!endCardFound && this.config.numCards !== undefined && card-1 != endat) {
+                  var moreToDo = document.createElement("div");
+                  moreToDo.className = "light";
+                  moreToDo.innerHTML = "and more...";
+                  wrapper.appendChild(moreToDo);
 		}
             }
         } else {
